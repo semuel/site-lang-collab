@@ -1,7 +1,10 @@
 #!/opt/local/bin/perl
 use Mojolicious::Lite;
 
-get '/' => {text => 'Hello World!'};
+get '/' => sub {
+    my $self = shift;
+    $self->render('index');
+};
 
 app->start;
 

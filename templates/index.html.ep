@@ -2,6 +2,6 @@
 <head>
 </head>
 <body>
-	<a href="<%= url_for('/app/oauth_start') %>">Github login</a>
+	<a href="<%= url_for('/login/oauth_start') %>">Github login</a>
 </body>
 </html>

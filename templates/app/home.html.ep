@@ -1,0 +1,8 @@
+<html>
+<head>
+</head>
+<body>
+    <p><strong>Hello <%= $user_data->{name} %></strong></p>
+    <a href="<%= url_for('/app/logout') %>">logout</a>
+</body>
+</html>

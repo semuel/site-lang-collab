@@ -2,7 +2,6 @@
 use Mojolicious::Lite;
 use FindBin;
 use JSON;
-use Storable;
 use lib $FindBin::Bin . '/lib';
 use lib $FindBin::Bin . '/extlib';
 use LangCollab::Schema;
@@ -35,7 +34,7 @@ get '/login/oauth_login' => sub {
     my $self = shift;
     my $code = $self->param('code');
     my $access_token = $self->oauth_obj->get_access_token($code);
-    my $res = $token->get('/user');
+    my $res = $access_token->get('/user');
     if (!$res->is_success()) {
         die "failed to read user data from Github";
     }
@@ -50,10 +49,60 @@ get '/login/oauth_login' => sub {
     foreach my $key (qw{url name email}) {
         $user_data->{$key} = $data->{$key};
     }
-    my $oauth_token = freeze($access_token->session_freeze());
+    my $user_class = $self->schema->resultset('User');
+    my $user_obj = $user_class->find($user_id);
+    if ($user_obj) {
+        $user_obj->oauth_token($access_token);
+        $user_obj->user_data($user_data);
+        $user_obj->update();
+    }
+    else {
+        $user_obj = $user_class->new({ id => $user_id, token => $token });
+        $user_obj->oauth_token($access_token);
+        $user_obj->user_data($user_data);
+        $user_obj->insert();
+    }
     $self->session({ user_id => $user_id, token => $token });
     $self->session(expiration => 604800);
     $self->redirect_to( $self->url_for('/app/home') );
+};
+
+group { 
+
+    under '/app' => sub {
+        my $self = shift;
+        my $user_id = $self->session->{id};
+        my $token = $self->session->{token};
+        if (not $user_id or not $token) {
+            $self->render(text => 'Please login');
+            return;
+        }
+        my $user = $self->schema->resultset('User')->find($user_id);
+        if (not $user or $token ne $user->token()) {
+            $self->render(text => 'Please login');
+            return;
+        }
+        $self->stash(user_obj => $user);
+        $self->stash(user_data => $user->user_data());
+        return 1;
+    };
+
+    get '/logout' => sub {
+        my $self = shift;
+        $self->session( {user_id => 0, token => 'xxxxxxxxxxxxx'} );
+        $self->session( expires => 1 );
+        my $user = $self->stash('user_obj');
+        $user->token('');
+        $user->update();
+        $self->redirect_to( $self->url_for('/') );
+    };
+
+    get '/home' => sub {
+        my $self = shift;
+        my $user_obj = $self->stash('user_obj');
+        $self->render('app/home');
+    };
+
 };
 
 helper oauth_obj => sub {

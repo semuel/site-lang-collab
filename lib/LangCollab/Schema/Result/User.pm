@@ -73,6 +73,32 @@ __PACKAGE__->set_primary_key("id");
 # Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-21 17:53:13
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hk++jFjkx23eKJZ18wxgUQ
 
+use Storable;
+
+sub oauth_token {
+  my $self = shift;
+  if (@_ > 0) {
+    my $token = shift;
+    $self->oauth(nfreeze($token->session_freeze()));
+    return;
+  }
+  else {
+    return thaw($self->oauth());
+  }
+}
+
+sub user_data {
+  my $self = shift;
+  if (@_ > 0) {
+    my $value = shift;
+    $self->data(nfreeze($value));
+    return;
+  }
+  else {
+    return thaw($self->data());
+  }
+}
+
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;

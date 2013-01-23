@@ -73,7 +73,7 @@ __PACKAGE__->set_primary_key("id");
 # Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-21 17:53:13
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hk++jFjkx23eKJZ18wxgUQ
 
-use Storable;
+use Storable qw{nfreeze thaw};
 
 sub oauth_token {
   my $self = shift;

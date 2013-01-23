@@ -11,13 +11,11 @@ my $config = plugin 'Config';
 app->secret( $config->{cookie_secret} );
 my @token_chars = ('a'..'z', 'A'..'Z', '0'..'9');
 
-has schema => sub {
-  return LangCollab::Schema->connect(
+my $db = LangCollab::Schema->connect(
     'dbi:mysql:dbname=' . $config->{database_table}, 
     $config->{database_user}, 
     $config->{database_password}
     );
-};
 
 get '/' => sub {
     my $self = shift;
@@ -34,9 +32,9 @@ get '/login/oauth_login' => sub {
     my $self = shift;
     my $code = $self->param('code');
     my $access_token = $self->oauth_obj->get_access_token($code);
-    my $res = $access_token->get('/user');
+    my $res = $access_token->get('https://api.github.com/user');
     if (!$res->is_success()) {
-        die "failed to read user data from Github";
+        die "failed to read user data from Github |", $res->status_line, "|", $res->content, "|";
     }
     if (my $abort = $res->{_headers}{'client-aborted'}) {
         die "request from github failed: $abort";
@@ -44,12 +42,12 @@ get '/login/oauth_login' => sub {
     my $content = $res->content;
     my $data = JSON::decode_json($content);
     my $user_id = $data->{id};
-    my $token = map { int(rand(scalar(@token_chars))) } 1..20;
+    my $token = join '', map { int(rand(scalar(@token_chars))) } 1..20;
     my $user_data = { };
     foreach my $key (qw{url name email}) {
         $user_data->{$key} = $data->{$key};
     }
-    my $user_class = $self->schema->resultset('User');
+    my $user_class = $db->resultset('User');
     my $user_obj = $user_class->find($user_id);
     if ($user_obj) {
         $user_obj->oauth_token($access_token);
@@ -71,15 +69,15 @@ group {
 
     under '/app' => sub {
         my $self = shift;
-        my $user_id = $self->session->{id};
+        my $user_id = $self->session->{user_id};
         my $token = $self->session->{token};
         if (not $user_id or not $token) {
-            $self->render(text => 'Please login');
+            $self->render(text => "Please login id($user_id) token($token)");
             return;
         }
-        my $user = $self->schema->resultset('User')->find($user_id);
+        my $user = $db->resultset('User')->find($user_id);
         if (not $user or $token ne $user->token()) {
-            $self->render(text => 'Please login');
+            $self->render(text => 'Please login ' . ($user ? "user defined" : "user undef") . " |$token|".$user->token()."|");
             return;
         }
         $self->stash(user_obj => $user);
@@ -116,6 +114,8 @@ helper oauth_obj => sub {
         authorize_path => '/login/oauth/authorize',
         access_token_path => '/login/oauth/access_token',
         protected_resource_url => 'https://api.github.com/',
+        scope => 'user,public_repo',
+        token_scheme => 'auth-header:Bearer',
         redirect_uri  => $cb,
     );
     return $client;

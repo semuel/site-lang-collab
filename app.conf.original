@@ -1,0 +1,8 @@
+{
+    cookie_secret => "something something",
+    github_key => "",
+    github_secret => "",
+    database_table => "",
+    database_user => "",
+    database_password => "",
+};

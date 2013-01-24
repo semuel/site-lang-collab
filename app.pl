@@ -117,6 +117,13 @@ helper oauth_obj => sub {
         scope => 'user,public_repo',
         token_scheme => 'auth-header:Bearer',
         redirect_uri  => $cb,
+        auto_save => sub { 
+            my ($profile, $token) = @_;
+            my $user_obj = $self->stash('user_obj');
+            return unless $user_obj;
+            $user_obj->oauth_token($token);
+            $user_obj->update();
+        },
     );
     return $client;
 };

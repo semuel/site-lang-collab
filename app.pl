@@ -1,7 +1,7 @@
 #!/opt/local/bin/perl
 use Mojolicious::Lite;
 use FindBin;
-use JSON;
+use JSON qw{decode_json};
 use lib $FindBin::Bin . '/lib';
 use lib $FindBin::Bin . '/extlib';
 use LangCollab::Schema;
@@ -10,6 +10,7 @@ my $config = plugin 'Config';
 
 app->secret( $config->{cookie_secret} );
 my @token_chars = ('a'..'z', 'A'..'Z', '0'..'9');
+my $github_api = 'https://api.github.com';
 
 my $db = LangCollab::Schema->connect(
     'dbi:mysql:dbname=' . $config->{database_table}, 
@@ -32,17 +33,9 @@ get '/login/oauth_login' => sub {
     my $self = shift;
     my $code = $self->param('code');
     my $access_token = $self->oauth_obj->get_access_token($code);
-    my $res = $access_token->get('https://api.github.com/user');
-    if (!$res->is_success()) {
-        die "failed to read user data from Github |", $res->status_line, "|", $res->content, "|";
-    }
-    if (my $abort = $res->{_headers}{'client-aborted'}) {
-        die "request from github failed: $abort";
-    }
-    my $content = $res->content;
-    my $data = JSON::decode_json($content);
+    my $data = $self->oauth_request($access_token, '/user');
     my $user_id = $data->{id};
-    my $token = join '', map { int(rand(scalar(@token_chars))) } 1..20;
+    my $token = join '', map { $token_chars[int(rand(scalar(@token_chars)))] } 1..20;
     my $user_data = { };
     foreach my $key (qw{url name email}) {
         $user_data->{$key} = $data->{$key};
@@ -52,6 +45,7 @@ get '/login/oauth_login' => sub {
     if ($user_obj) {
         $user_obj->oauth_token($access_token);
         $user_obj->user_data($user_data);
+        $user_obj->token($token);
         $user_obj->update();
     }
     else {
@@ -101,6 +95,12 @@ group {
         $self->render('app/home');
     };
 
+    get '/home/list_github_modules' => sub {
+        my $self = shift;
+        my $user_obj = $self->stash('user_obj');
+        my $oauth_token = $user_obj->oauth_token();
+    };
+
 };
 
 helper oauth_obj => sub {
@@ -119,6 +119,21 @@ helper oauth_obj => sub {
         redirect_uri  => $cb,
     );
     return $client;
+};
+
+helper oauth_request => sub {
+    my $self = shift;
+    my ($access_token, $url, $method) = @_;
+    $method ||= 'get';
+    my $res = $access_token->get($github_api . $url);
+    if (!$res->is_success()) {
+        die "failed to read user data from Github |$url|", $res->status_line, "|", $res->content, "|";
+    }
+    if (my $abort = $res->{_headers}{'client-aborted'}) {
+        die "request $url from github failed: $abort";
+    }
+    my $content = $res->content;
+    return decode_json($content);
 };
 
 app->start;

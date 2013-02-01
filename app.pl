@@ -95,19 +95,54 @@ group {
         $self->render('app/home');
     };
 
-    get '/home/list_github_modules' => sub {
+    get '/home/register_resp_dialog' => sub {
         my $self = shift;
         my $user_obj = $self->stash('user_obj');
-        my $oauth_token = $user_obj->oauth_token();
+        my $access_token = $self->get_user_oauth();
+        my $data = $self->oauth_request($access_token, '/user/repos?type=owner');
+        my @resps;
+        foreach my $rec (@$data) {
+            push @resps, { 
+                fullname => $rec->{full_name},
+                description => $rec->{description},
+            };
+        }
+        $self->stash('resp_data', \@resps);
+        $self->render('app/home/register_resp_dialog');
+    };
+
+    get '/home/do_register_resp' => sub {
+        my $self = shift;
+        # name is in the format of owner/resp_name
+        my $resp_name = $self->param('name');
+        my $access_token = $self->get_user_oauth();
+        my $resp_data = $self->oauth_request($access_token, '/repos/$resp_name');
+        my $branch_data = $self->oauth_request($access_token, '/repos/$resp_name/branches');
+        
     };
 
 };
 
+helper get_user_oauth => sub {
+    my $self = shift;
+    my $token = $self->stash('oauth_token');
+    return $token if $token;
+    my $user = $self->stash('user_obj');
+    die "no user was defined" unless $user;
+    my $oauth_obj = $self->oauth_obj();
+    my $token_frozen = $user->oauth_token();
+    $token = Net::OAuth2::AccessToken->session_thaw($token_frozen, profile => $oauth_obj);
+    $self->stash('oauth_token' => $token);
+    return $token;
+};
+
 helper oauth_obj => sub {
     my $self = shift;
+    my $client = $self->stash('oauth_client');
+    return $client if $client;
     require Net::OAuth2::Profile::WebServer;
     my $cb = 'http://localhost' . $self->url_for('/login/oauth_login');
-    my $client = Net::OAuth2::Profile::WebServer->new( 
+    $client = Net::OAuth2::Profile::WebServer->new( 
         client_id     => $config->{github_key},
         client_secret => $config->{github_secret},
         site => 'https://github.com/',
@@ -125,6 +160,7 @@ helper oauth_obj => sub {
             $user_obj->update();
         },
     );
+    $self->stash('oauth_client' => $client);
     return $client;
 };
 

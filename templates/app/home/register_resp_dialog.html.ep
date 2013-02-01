@@ -1,0 +1,15 @@
+<html>
+<head>
+</head>
+<body>
+    <p><strong><%= $user_data->{name} %> - Resps</strong></p>
+    <ul>
+    	% foreach my $rec (@$resp_data) {
+    		<li>
+    			<%= $rec->{fullname} %> <a href="<%= url_for('/app/do_register_resp')->query(name => $rec->{fullname} ) %>">Register</a><br/>
+    			<%= $rec->{description} %>
+    		</li>
+    	% }
+    </ul>
+</body>
+</html>

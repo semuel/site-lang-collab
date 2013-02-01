@@ -7,3 +7,13 @@ CREATE TABLE user (
     oauth BLOB not null
 );
 
+CREATE TABLE project (
+    id int not null primary key auto_increment,
+    url varchar(255) not null,
+    owner int not null,
+    resp_name varchar(255) not null,
+    description varchar(255) not null,
+    master_branch varchar(255) not null,
+    dev_branch varchar(255)
+);
+

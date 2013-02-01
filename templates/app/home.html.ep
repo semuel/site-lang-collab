@@ -5,5 +5,18 @@
     <p><strong>Hello <%= $user_data->{name} %></strong></p>
     <p><a href="<%= url_for('/app/home/register_resp_dialog') %>">Register a new Plugin!</a></p>
     <p><a href="<%= url_for('/app/logout') %>">logout</a></p>
+    <p>
+        Your Registered projects
+        <ul>
+        % foreach my $prj (@$self_prjs) {
+            <li>
+                <%= $prj->resp_name() %> 
+                <a href="<%= url_for('/app/home/unregister_resp')->query(name => $prj->resp_name() ) %>">Remove</a><br/>
+                <%= $prj->description() %><br/>
+                Release branch: <%= $prj->master_branch() %>, Dev Branch: <%= $prj->dev_branch() %> <a href="<%= url_for('/app/home/change_resp_dev_branch')->query(name => $prj->resp_name() ) %>">Change</a>
+            </li>
+        % }
+        </ul>
+    </p>
 </body>
 </html>

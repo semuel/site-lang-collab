@@ -92,6 +92,8 @@ group {
     get '/home' => sub {
         my $self = shift;
         my $user_obj = $self->stash('user_obj');
+        my @prjs = $db->resultset('Project')->search({ owner => $user_obj->id() })->all();
+        $self->stash('self_prjs' => \@prjs);
         $self->render('app/home');
     };
 
@@ -116,8 +118,43 @@ group {
         # name is in the format of owner/resp_name
         my $resp_name = $self->param('name');
         my $access_token = $self->get_user_oauth();
-        my $resp_data = $self->oauth_request($access_token, '/repos/$resp_name');
-        my $branch_data = $self->oauth_request($access_token, '/repos/$resp_name/branches');
+        my $resp_data = $self->oauth_request($access_token, "/repos/$resp_name");
+        my $branch_data = $self->oauth_request($access_token, "/repos/$resp_name/branches");
+        my $prj = $db->resultset('Project')->new({
+            url => $resp_data->{html_url},
+            owner => $self->stash('user_obj')->id(),
+            resp_name => $resp_name,
+            description => $resp_data->{description},
+            master_branch => $resp_data->{master_branch},
+            dev_branch => $resp_data->{master_branch},
+            });
+        $prj->insert();
+        if (@$branch_data == 1) {
+            return $self->redirect_to( $self->url_for('/app/home') );
+        }
+        my @b_names = map $_->{name}, @$branch_data;
+        $self->stash('branch_names', \@b_names);
+        $self->stash('resp_name', $resp_name);
+        $self->stash('resp_description', $resp_data->{description});
+        $self->render('app/home/choose_devel_branch');
+    };
+
+    get '/home/unregister_resp' => sub {
+        my $self = shift;
+        my $resp_name = $self->param('name');
+        my $user_obj = $self->stash('user_obj');
+        my $prj = $db->resultset('Project')->search(
+            { owner => $user_obj->id(), resp_name => $resp_name })->first();
+        $prj->delete();
+        $self->redirect_to( $self->url_for('/app/home') );
+    };
+
+    get '/home/configure_resp' => sub {
+        my $self = shift;
+        my $resp_name = $self->param('name');
+        my $user_obj = $self->stash('user_obj');
+        my $prj = $db->resultset('Project')->search(
+            { owner => $user_obj->id(), resp_name => $resp_name })->first();
         
     };
 

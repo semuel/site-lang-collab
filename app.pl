@@ -134,9 +134,8 @@ group {
         }
         my @b_names = map $_->{name}, @$branch_data;
         $self->stash('branch_names', \@b_names);
-        $self->stash('resp_name', $resp_name);
-        $self->stash('resp_description', $resp_data->{description});
-        $self->render('app/home/choose_devel_branch');
+        $self->stash('prj', $prj);
+        $self->render('app/home/configure_resp');
     };
 
     get '/home/unregister_resp' => sub {
@@ -159,12 +158,23 @@ group {
         my $branch_data = $self->oauth_request($access_token, "/repos/$resp_name/branches");
         my @b_names = map $_->{name}, @$branch_data;
         $self->stash('branch_names', \@b_names);
-        $self->stash('resp_name', $resp_name);
-        $self->stash('resp_description', $prj->description());
-        $self->stash('current_dev_branch', $prj->dev_branch());
-        $self->stash('plugin_url', $prj->url());
-        $self->stash('main_lang', $prj->main_lang());
+        $self->stash('prj', $prj);
         $self->render('app/home/configure_resp');
+    };
+
+    post '/home/do_resp_configuration' => sub {
+        my $self = shift;
+        my $resp_name = $self->param('name');
+        my $main_lang = $self->param('main_lang');
+        my $dev_branch = $self->param('dev_branch');
+
+        my $user_obj = $self->stash('user_obj');
+        my $prj = $db->resultset('Project')->search(
+            { owner => $user_obj->id(), resp_name => $resp_name })->first();
+        my $access_token = $self->get_user_oauth();
+        my $branch_data = $self->oauth_request($access_token, "/repos/$resp_name/branches");
+
+        $self->redirect_to( $self->url_for('/app/home/configure_resp')->query(name => $prj->resp_name() ) );
     };
 
 };

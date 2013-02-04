@@ -1,0 +1,33 @@
+<html>
+<head>
+</head>
+<body>
+<form method="post" action="<%= url_for('/app/home/do_resp_configuration') %>">
+    <p><strong>Configuring</strong> <%= $prj->resp_name() %></p>
+    <p><strong>Description:</strong> <%= $prj->description() %></p>
+    <p>
+        <strong>Plugin Main language</strong>
+        <select name="main_lang">
+            <option value="en" <%= $prj->main_lang() eq 'en' ? 'selected="selected"' : '' %>>English</option>
+            <option value="ja" <%= $prj->main_lang() eq 'ja' ? 'selected="selected"' : '' %>>Japanese</option>
+        </select>
+    </p>
+    <p>
+        <strong>Plugin development Branch</strong>
+        % if (@$branch_names == 1) {
+            Only one branch exists in resp
+        % }
+        % else {
+            <select name="dev_branch">
+            % foreach my $branch (@$branch_names) {
+                <option value="$branch" <%= $prj->dev_branch() eq $branch ? 'selected="selected"' : '' %>>$branch</option>
+            % }
+            </select>
+        % }
+    </p>
+    <input type="hidden" name="resp_name" value="<%= $prj->resp_name() %>" />
+    <button type="submit">Save</button>
+    <a href="<%= url_for('/app/home') %>">Back to home</a>
+</form>
+</body>
+</html>

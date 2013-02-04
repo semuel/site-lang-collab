@@ -11,7 +11,9 @@
         % foreach my $prj (@$self_prjs) {
             <li>
                 <%= $prj->resp_name() %> 
-                <a href="<%= url_for('/app/home/unregister_resp')->query(name => $prj->resp_name() ) %>">Remove</a><br/>
+                <a href="<%= url_for('/app/home/configure_resp')->query(name => $prj->resp_name() ) %>">Configure</a>
+                <a href="<%= url_for('/app/home/unregister_resp')->query(name => $prj->resp_name() ) %>">Remove</a>
+                <br/>
                 <%= $prj->description() %><br/>
                 Release branch: <%= $prj->master_branch() %>, Dev Branch: <%= $prj->dev_branch() %> <a href="<%= url_for('/app/home/change_resp_dev_branch')->query(name => $prj->resp_name() ) %>">Change</a>
             </li>

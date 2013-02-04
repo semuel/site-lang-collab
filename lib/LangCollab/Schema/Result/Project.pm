@@ -64,6 +64,12 @@ __PACKAGE__->table("project");
   is_nullable: 1
   size: 255
 
+=head2 main_lang
+
+  data_type: 'char'
+  is_nullable: 0
+  size: 2
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -81,6 +87,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "dev_branch",
   { data_type => "varchar", is_nullable => 1, size => 255 },
+  "main_lang",
+  { data_type => "char", is_nullable => 0, size => 2 },
 );
 
 =head1 PRIMARY KEY
@@ -96,8 +104,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-01 11:53:59
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:k2YqorqsntlR0E68yd+HbQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-04 14:59:28
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kjNJictD4WtbaGcODgVbOA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

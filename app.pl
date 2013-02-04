@@ -155,7 +155,16 @@ group {
         my $user_obj = $self->stash('user_obj');
         my $prj = $db->resultset('Project')->search(
             { owner => $user_obj->id(), resp_name => $resp_name })->first();
-        
+        my $access_token = $self->get_user_oauth();
+        my $branch_data = $self->oauth_request($access_token, "/repos/$resp_name/branches");
+        my @b_names = map $_->{name}, @$branch_data;
+        $self->stash('branch_names', \@b_names);
+        $self->stash('resp_name', $resp_name);
+        $self->stash('resp_description', $prj->description());
+        $self->stash('current_dev_branch', $prj->dev_branch());
+        $self->stash('plugin_url', $prj->url());
+        $self->stash('main_lang', $prj->main_lang());
+        $self->render('app/home/configure_resp');
     };
 
 };

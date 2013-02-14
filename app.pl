@@ -1,14 +1,17 @@
 #!/opt/local/bin/perl
 use Mojolicious::Lite;
+use 5.012;
 use FindBin;
 use JSON qw{decode_json};
 use lib $FindBin::Bin . '/lib';
 use lib $FindBin::Bin . '/extlib';
 use LangCollab::Schema;
 
-my $config = plugin 'Config';
+app->log->level('error');
 
+my $config = plugin 'Config';
 app->secret( $config->{cookie_secret} );
+
 my @token_chars = ('a'..'z', 'A'..'Z', '0'..'9');
 my $github_api = 'https://api.github.com';
 
@@ -66,7 +69,7 @@ group {
         my $user_id = $self->session->{user_id};
         my $token = $self->session->{token};
         if (not $user_id or not $token) {
-            $self->render(text => "Please login id($user_id) token($token)");
+            $self->render(text => 'Please login id('.($user_id // '').') token('.($token // '').')');
             return;
         }
         my $user = $db->resultset('User')->find($user_id);
@@ -171,13 +174,39 @@ group {
         my $user_obj = $self->stash('user_obj');
         my $prj = $db->resultset('Project')->search(
             { owner => $user_obj->id(), resp_name => $resp_name })->first();
+        die "Not valid resp name"
+            unless $prj;
         my $access_token = $self->get_user_oauth();
         my $branch_data = $self->oauth_request($access_token, "/repos/$resp_name/branches");
+
+        if (defined $dev_branch) {
+            die "Development branch not exists on Github?!"
+                unless 1 == grep { $dev_branch eq $_->{name} } @$branch_data;
+            $prj->dev_branch($dev_branch); 
+        }
+        else {
+            $prj->dev_branch(undef);
+        }
+        die "Project language $main_lang not supported"
+            unless grep { $main_lang eq $_ } qw{ en ja };
+        $prj->main_lang($main_lang);
+        $prj->update();
 
         $self->redirect_to( $self->url_for('/app/home/configure_resp')->query(name => $prj->resp_name() ) );
     };
 
 };
+
+sub fetch_all_documention {
+    my ($self, $name, $token) = @_;
+    $token ||= $self->get_user_oauth();
+    my $tree = $self->oauth_request($token, "/repos/$name/git/trees/master");
+    foreach my $f_rec (@{ $tree->{tree} }) {
+        next unless $f_rec->{type} ne "blob";
+        next unless $f_rec->{path} =~ m/README/;
+        print STDERR "Found file: ", $f_rec->{path}, "\n";
+    }
+}
 
 helper get_user_oauth => sub {
     my $self = shift;

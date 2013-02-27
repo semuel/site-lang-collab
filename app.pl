@@ -23,7 +23,6 @@ my $db = LangCollab::Schema->connect(
 
 get '/' => sub {
     my $self = shift;
-    print STDERR "URL: |", $self->req->url->to_string, "|\n";
     $self->render('index');
 };
 

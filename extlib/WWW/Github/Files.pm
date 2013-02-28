@@ -94,4 +94,25 @@ sub geturl {
     return decode_json($content);
 }
 
+package WWW::Github::Files::File;
+
+sub is_file { 1 }
+sub is_dir { 0 }
+
+sub content {
+    my $self = shift;
+    if ($self->{encoding} eq 'base64') {
+        return decode_base64($self->{content});
+    }
+    else {
+        die "can not handle encoding " . $self->{encoding} . " for file $path";
+    }
+}
+
+package WWW::Github::Files::Dir;
+
+sub is_file { 0 }
+sub is_dir { 1 }
+
+
 1;

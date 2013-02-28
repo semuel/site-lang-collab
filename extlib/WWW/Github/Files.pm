@@ -29,27 +29,29 @@ sub new {
     bless $self, $class;
 }
 
-sub get_file {
+sub open {
     my ($self, $path) = @_;
     my $f_data = $self->get_file_meta($path);
-    croak("requested file is not a file! |$path|")
-        unless $f_data->{type} eq 'file';
-    if ($f_data->{encoding} eq 'base64') {
-        return decode_base64($f_data->{content});
+    if (ref($f_data) eq 'ARRAY') {
+        # a directory
+        return bless { FS => $self, content => $f_data }, 'WWW::Github::Files::Dir';
+    }
+    elsif ($f_data->{type} eq 'file') {
+        return bless $f_data, 'WWW::Github::Files::File';
     }
     else {
-        die "can not handle encoding " . $f_data->{encoding} . " for file $path";
+        croak('unrecognised file type for $path');
     }
+}
+
+sub get_file {
+    my ($self, $path) = @_;
+    return $self->open($path)->read();
 }
 
 sub get_dir {
     my ($self, $path) = @_;
-    my $f_data = $self->get_file_meta($path);
-    croak('Are you sure $path is a directory?')
-        unless ref($f_data) eq 'ARRAY';
-    my @dirs = grep { 'dir' eq $_->{type} } @$f_data;
-    my @files = grep { 'file' eq $_->{type} } @$f_data;
-    return (\@dirs, \@files);
+    return $self->open($path)->readdir();
 }
 
 sub get_file_meta {
@@ -95,17 +97,24 @@ sub geturl {
 }
 
 package WWW::Github::Files::File;
+use MIME::Base64 qw{decode_base64};
 
 sub is_file { 1 }
 sub is_dir { 0 }
 
-sub content {
+sub read {
     my $self = shift;
+    if (not $self->{content}) {
+        # this is a file object created from directory listing. 
+        # need to fetch the content
+        my $f_data = $self->{FS}->open('/'.$self->{path});
+        $self->{$_} = $f_data->{$_} for (qw{ encoding content });
+    }
     if ($self->{encoding} eq 'base64') {
         return decode_base64($self->{content});
     }
     else {
-        die "can not handle encoding " . $self->{encoding} . " for file $path";
+        die "can not handle encoding " . $self->{encoding} . " for file ". $self->{path};
     }
 }
 
@@ -114,5 +123,28 @@ package WWW::Github::Files::Dir;
 sub is_file { 0 }
 sub is_dir { 1 }
 
+sub readdir {
+    my $self = shift;
+    if (not $self->{content}) {
+        # this is a file object created from directory listing. 
+        # need to fetch the content
+        my $f_data = $self->{FS}->open('/'.$self->{path});
+        $self->{content} = $f_data;
+    }
+    my @files;
+    foreach my $rec (@{ $self->{content} }) {
+        $rec->{FS} = $self->{FS};
+        if ($rec->{type} eq 'file') {
+            push @files, bless($rec, 'WWW::Github::Files::File');
+        }
+        elsif ($rec->{type} eq 'dir') {
+            push @files, bless($rec, 'WWW::Github::Files::Dir');
+        }
+        else {
+            croak('unrecognised file type: '.$rec->{type});
+        }
+    }
+    return @files;
+}
 
 1;

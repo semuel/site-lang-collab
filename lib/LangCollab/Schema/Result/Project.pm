@@ -109,4 +109,55 @@ __PACKAGE__->set_primary_key("id");
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+use WWW::Github::Files;
+use Carp;
+
+sub detect_file_lang {
+    my $content = shift;
+    my $size = length $content;
+    my $en =()= $content =~ m/([a-zA-Z])/g;
+    return ($en < $size * 0.4 ? 'ja' : 'en');
+}
+
+sub fetch_all_documention {
+    my ($self, $token) = @_;
+    my ($author, $resp) = split '/', $self->resp_name(), 2;
+    my $master = WWW::Github::Files->new(   
+        author => $author,
+        resp => $resp,
+        branch => 'master',
+    );
+    my @files = $master->open('/')->readdir();
+    foreach my $file (@files) {
+        next unless $file->is_file();
+        my $name = $file->{name};
+        next unless $name =~ m/^README/;
+        my $content = $file->read();
+        my $lang = 
+              $name =~ m/\bja\b/ ? 'ja'
+            : $name =~ m/\ben\b/ ? 'en'
+            : detect_file_lang($content);
+        print STDERR "Found file |$name|$lang|\n";
+    }
+}
+
+sub fetch_lang_files {
+    my ($self, $token, $commit) = @_;
+    my ($author, $resp) = split '/', $self->resp_name(), 2;
+    my $master = WWW::Github::Files->new(   
+        author => $author,
+        resp => $resp,
+        $commit ? (commit => $commit) : (branch => $self->dev_branch() || $self->master_branch()),
+    );
+    my @plugins = $master->open('/plugins')->readdir();
+    if (@plugins != 1) {
+        croak('Can only handle one plugin per git');
+    }
+    my $plugin_dir = $plugins[0];
+    my $config = $master->open('/'.$plugin_dir->{path}.'/config.yaml')->read();
+    my ($l10n_class) = $config =~ m/^l10n_class:\s*(.*)$/m;
+    print STDERR $l10n_class;
+}
+
 1;

@@ -6,6 +6,7 @@ use JSON qw{decode_json};
 use lib $FindBin::Bin . '/lib';
 use lib $FindBin::Bin . '/extlib';
 use LangCollab::Schema;
+use WWW::Github::Files;
 
 app->log->level('error');
 
@@ -189,23 +190,14 @@ group {
         die "Project language $main_lang not supported"
             unless grep { $main_lang eq $_ } qw{ en ja };
         $prj->main_lang($main_lang);
+        #$prj->fetch_all_documention($access_token);
+        $prj->fetch_lang_files($access_token);
         $prj->update();
 
         $self->redirect_to( $self->url_for('/app/home/configure_resp')->query(name => $prj->resp_name() ) );
     };
 
 };
-
-sub fetch_all_documention {
-    my ($self, $name, $token) = @_;
-    $token ||= $self->get_user_oauth();
-    my $tree = $self->oauth_request($token, "/repos/$name/git/trees/master");
-    foreach my $f_rec (@{ $tree->{tree} }) {
-        next unless $f_rec->{type} ne "blob";
-        next unless $f_rec->{path} =~ m/README/;
-        print STDERR "Found file: ", $f_rec->{path}, "\n";
-    }
-}
 
 helper get_user_oauth => sub {
     my $self = shift;

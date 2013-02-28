@@ -3,8 +3,6 @@ use strict;
 use warnings;
 use LWP::UserAgent;
 use JSON qw{decode_json};
-use MIME::Base64 qw{decode_base64};
-use Data::Dumper;
 use Carp;
 
 sub new {
@@ -31,7 +29,10 @@ sub new {
 
 sub open {
     my ($self, $path) = @_;
-    my $f_data = $self->get_file_meta($path);
+    croak("Path should start with '/'! |$path|")
+        unless $path =~ m!^/!;
+    my $commit = $self->__fetch_root();
+    my $f_data = $self->geturl("/contents$path?ref=$commit");
     if (ref($f_data) eq 'ARRAY') {
         # a directory
         return bless { FS => $self, content => $f_data }, 'WWW::Github::Files::Dir';
@@ -52,19 +53,6 @@ sub get_file {
 sub get_dir {
     my ($self, $path) = @_;
     return $self->open($path)->readdir();
-}
-
-sub get_file_meta {
-    my ($self, $path) = @_;
-    croak("Path should start with '/'! |$path|")
-        unless $path =~ m!^/!;
-    my $commit = $self->__fetch_root();
-    my $f_data = $self->geturl("/contents$path?ref=$commit");
-    return $f_data;
-}
-
-sub refresh {
-    my ($self) = @_;
 }
 
 sub __fetch_root {

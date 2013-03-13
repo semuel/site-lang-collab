@@ -5,6 +5,8 @@ use LWP::UserAgent;
 use JSON qw{decode_json};
 use Carp;
 
+our $VERSION = 0.02;
+
 sub new {
     my ($class, %options) = @_;
 
@@ -32,10 +34,19 @@ sub open {
     croak("Path should start with '/'! |$path|")
         unless $path =~ m!^/!;
     my $commit = $self->__fetch_root();
+    $path =~ s!/$!!;
+    $path = '/' if $path eq '';
     my $f_data = $self->geturl("/contents$path?ref=$commit");
     if (ref($f_data) eq 'ARRAY') {
         # a directory
-        return bless { FS => $self, content => $f_data }, 'WWW::Github::Files::Dir';
+        my ($name) = $path =~ m!/([^/]*)$!;
+        my $dir = {
+            FS => $self,
+            content => $f_data,
+            name => $name,
+            path => ( $path eq '/' ? '' : substr($path, 1) ),
+        };
+        return bless $dir, 'WWW::Github::Files::Dir';
     }
     elsif ($f_data->{type} eq 'file') {
         return bless $f_data, 'WWW::Github::Files::File';
@@ -90,6 +101,9 @@ use MIME::Base64 qw{decode_base64};
 sub is_file { 1 }
 sub is_dir { 0 }
 
+sub name { return $_[0]->{name} }
+sub path { return '/'.$_[0]->{path} }
+
 sub read {
     my $self = shift;
     if (not $self->{content}) {
@@ -111,13 +125,16 @@ package WWW::Github::Files::Dir;
 sub is_file { 0 }
 sub is_dir { 1 }
 
+sub name { return $_[0]->{name} }
+sub path { return '/'.$_[0]->{path} }
+
 sub readdir {
     my $self = shift;
     if (not $self->{content}) {
         # this is a file object created from directory listing. 
         # need to fetch the content
         my $f_data = $self->{FS}->open('/'.$self->{path});
-        $self->{content} = $f_data;
+        $self->{content} = $f_data->{content};
     }
     my @files;
     foreach my $rec (@{ $self->{content} }) {
@@ -136,3 +153,130 @@ sub readdir {
 }
 
 1;
+
+=head1 NAME
+
+WWW::Github::Files - Read files and directories from Github
+
+=head1 SYNOPSIS
+
+    my $gitfiles = WWW::Github::Files->new(
+        author => 'semuel',
+        resp => 'site-lang-collab',
+        branch => 'master',
+    );
+
+    my @files = $gitfiles->open('/')->readdir();
+
+=head1 DESCRIPTION
+
+Using Github API to browse a git resp easily and download files
+
+This modules is a thin warper around the API, just to make life easier
+
+=head1 ALTERNATIVES
+
+The easiest way to get a file off Github is to use the raw url:
+
+https://raw.github.com/semuel/perlmodule-WWW-Github-Files/master/MANIFEST
+
+This will return the content of this module's MANIFEST file. Easy, but 
+the file have to be public and you need to know beforehand where exactly 
+it is. (this method does not fetch directory content)
+
+Also, if you download two files under 'master', there is a chance that a
+commit happened in the middle and you get two files from two different
+versions of the respo. Of course you can fetch the current commit and
+use it instead of master, but then it is less easy
+
+This module let you use Access Token for permission, and scan directories
+
+=head1 CONSTRUCTOR OPTIONS
+
+=over 4
+
+=item author - resp author
+
+=item resp - resp name
+
+=item branch - The branch to read from
+
+Mutual exlusive with 'commit'. 
+
+On first access the object will "lock" on the latest commit in this branch,
+and from this point will serve files only from this commit
+
+=item commit - a specific commit to read from
+
+The object will retrive files and directories as they were after this commit
+
+=item token
+
+Optional Net::Oauth2 Access Token, for using in API calls.
+If not specified, will make anonymous calls using LWP
+
+=back
+
+=head1 METHODS
+
+=head2 open(path)
+
+receive path (which have to start with '/') and return file or dir object
+for that location
+
+=head2 get_file(path)
+
+shortcut to $gitfiles->open(path)->read()
+
+=head2 get_dir(path)
+
+shortcut to $gitfiles->open(path)->readdir()
+
+=head1 FILE OBJECT METHODS
+
+=head2 name
+
+The name of the file
+
+=head2 path
+
+full path (+name) of the file
+
+=head2 is_file
+
+=head2 is_dir
+
+=head2 read
+
+returns the content of the file
+
+=head1 DIRECTORY OBJECT METHODS
+
+=head2 name
+
+The name of the directory
+
+=head2 path
+
+full path (+name) of the directory
+
+=head2 is_file
+
+=head2 is_dir
+
+=head2 readdir
+
+returns a list of file/dir objects that this directory contains
+
+=head1 AUTHOR
+ 
+Fomberg Shmuel, E<lt>shmuelfomberg@gmail.comE<gt>
+ 
+=head1 COPYRIGHT AND LICENSE
+ 
+Copyright 2013 by Shmuel Fomberg.
+ 
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+ 
+=cut

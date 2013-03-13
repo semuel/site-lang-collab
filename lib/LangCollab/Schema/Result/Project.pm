@@ -155,9 +155,15 @@ sub fetch_lang_files {
         croak('Can only handle one plugin per git');
     }
     my $plugin_dir = $plugins[0];
-    my $config = $master->open('/'.$plugin_dir->{path}.'/config.yaml')->read();
+    my $config = $master->open($plugin_dir->path().'/config.yaml')->read();
     my ($l10n_class) = $config =~ m/^l10n_class:\s*(.*)$/m;
-    print STDERR $l10n_class;
+    if (not $l10n_class) {
+        croak('This plugin does not have a l10n_class defined');
+    }
+    $l10n_class =~ s/::/\//g;
+    my $lang_path = $plugin_dir->path().'/lib/'.$l10n_class;
+    my @lang_files = $master->open($lang_path)->readdir();
+    print STDERR "Files: |", join('|', map { $_->name() } @lang_files), "|\n";
 }
 
 1;

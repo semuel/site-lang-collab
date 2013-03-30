@@ -1,4 +1,4 @@
-perl -MDBIx::Class::Schema::Loader=make_schema_at,dump_to_dir:./lib -e 'make_schema_at("LangCollab::Schema", { debug => 1 }, [ "dbi:mysql:dbname=lang_collab","root", "" ])'
+perl -I./extlib -MDBIx::Class::Schema::Loader=make_schema_at,dump_to_dir:./lib -e 'make_schema_at("LangCollab::Schema", { debug => 1 }, [ "dbi:mysql:dbname=lang_collab","root", "" ])'
 
 CREATE TABLE user (
     id int not null primary key,
@@ -24,4 +24,16 @@ CREATE TABLE readmes (
     readme text not null,
     format char(5),
     PRIMARY KEY (prj_id, lang)
+);
+
+CREATE TABLE translations (
+    trans_id int not null primary key auto_increment,
+    prj_id int not null,
+    user_id int not null,
+    status int not null,
+    lang char(2) not null,
+    source varchar(400) not null,
+    trans varchar(400) not null,
+    source_quotes char(4) not null,
+    dest_quotes char(4) not null
 );

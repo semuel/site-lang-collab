@@ -24,6 +24,16 @@ my $db = LangCollab::Schema->connect(
 
 get '/' => sub {
     my $self = shift;
+
+    my $user_id = $self->session->{user_id};
+    my $token = $self->session->{token};
+    if ($user_id and $token) {
+        my $user = $db->resultset('User')->find($user_id);
+        if ($user and $token eq $user->token()) {
+            return $self->redirect_to( $self->url_for('/app/home') );
+        }
+    }
+
     $self->render('index');
 };
 

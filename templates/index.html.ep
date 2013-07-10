@@ -2,9 +2,7 @@
 <html>
 <head>
     <title>Translationg Collaboration for Movable Type Plugins</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Bootstrap -->
-    <link href="<%= url_for('/bootstrap/css/bootstrap.min.css') %>" rel="stylesheet" media="screen">
+    %= include 'part_public_head'
     <style type="text/css">
       body {
         padding-top: 20px;
@@ -42,44 +40,29 @@
         margin-top: 28px;
       }
     </style>
-    <link href="<%= url_for('/bootstrap/css/bootstrap-responsive.css') %>" rel="stylesheet">
 
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="../assets/js/html5shiv.js"></script>
-    <![endif]-->
-
-    <!-- Fav and touch icons -->
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
-      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
-                    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
-                                   <link rel="shortcut icon" href="../assets/ico/favicon.png">
 
 </head>
 <body>
 
     <div class="container-narrow">
-
-      <div class="masthead">
-        <ul class="nav nav-pills pull-right">
-          <li class="active"><a href="#">Home</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-        <h3 class="muted">Plugin Language Collaboration</h3>
-      </div>
-
+      
+%= include 'part_public_heading'
       <hr>
 
       <div class="jumbotron">
-        <h1>Super awesome marketing speak!</h1>
-        <p class="lead">Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-        <a class="btn btn-large btn-success" href="#">Sign up today</a>
+        <h1>Help translate plugins to your language!</h1>
+        <p class="lead">
+          Plugin developers are expert in Movable Type, Perl and Javascript. 
+          But translating their plugin to English, Japanese or Spanish is even more difficult.
+          Help them help you, and contribute translations, one phrase at a time! 
+        </p>
+        <a class="btn btn-large btn-success" href="<%= url_for('/login/oauth_start') %>">Sign up / Login using Github</a>
       </div>
 
       <hr>
 
+<!---
       <div class="row-fluid marketing">
         <div class="span6">
           <h4>Subheading</h4>
@@ -105,15 +88,15 @@
       </div>
 
       <hr>
+-->
 
       <div class="footer">
-        <p>&copy; Company 2013</p>
+        <p>&copy; Shmuel Fomberg 2013</p>
       </div>
 
     </div> <!-- /container -->
 
 
-    <a href="<%= url_for('/login/oauth_start') %>">Github login</a>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
     <script src="<%= url_for('/bootstrap/js/bootstrap.min.js') %>"></script>
 </body>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Translationg Collaboration for Movable Type Plugins</title>
+    %= include 'part_public_head'
+    <link href="<%= url_for('/bootstrap/css/docs.css') %>" rel="stylesheet">
+    <style type="text/css">
+      /* Custom container */
+      .container-narrow {
+        margin: 0 auto;
+        max-width: 700px;
+      }
+      .container-narrow > hr {
+        margin: 30px 0;
+      }
+    </style>
+
+</head>
+<body data-spy="scroll" data-target=".bs-docs-sidebar">
+
+ <div class="container">
+
+%= include 'part_public_heading'
+
+    <!-- Docs nav
+    ================================================== -->
+    <div class="row">
+      <div class="span3 bs-docs-sidebar">
+        <ul class="nav nav-list bs-docs-sidenav">
+          <li><a href="#why"><i class="icon-chevron-right"></i> Why</a></li>
+          <li><a href="#contact"><i class="icon-chevron-right"></i> Contact</a></li>
+        </ul>
+      </div>
+      <div class="span9">
+
+      <section id="why">
+          <div class="why">
+            <h1>Why</h1>
+          </div>
+          <h2>Nobody know all the languages</h2>
+          <p>
+          	And most know only one or two languages at native level. And while MT speaks five languages, 
+          	(English, Japanese, German, Spanish, Franch, Dutch) Your favorite plugin's developer may not 
+          	Japanese well enough. 
+          </p>
+          <p>
+          	Also, maintaining localization for multiple languages is pretty hard. Every time you add
+          	a single phrase to your code / template, you need to add it to <strong>all</strong> of the
+          	language files. This website tries to make it as painless as possible. 
+          </p>
+      </section>
+
+
+      <section id="contact">
+          <div class="page-header">
+            <h1>Contact</h1>
+          </div>
+          <p>
+          	Shmuel Fomberg<br/>
+          	<a href="mailto:shmuelfomberg@gmail.com">shmuelfomberg@gmail.com</a>
+          </p>
+      </section>
+
+      </div>
+    </div>
+</div>
+
+      <div class="footer">
+        <p>&copy; Shmuel Fomberg 2013</p>
+      </div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<script src="<%= url_for('/bootstrap/js/bootstrap.min.js') %>"></script>
+<script src="<%= url_for('/bootstrap/js/bootstrap-scrollspy.js') %>"></script>
+<script src="<%= url_for('/bootstrap/js/bootstrap-affix.js') %>"></script>
+<script type="text/javascript">
+!function ($) {
+	var $window = $(window);
+    // side bar
+    setTimeout(function () {
+      $('.bs-docs-sidenav').affix({
+        offset: {
+          top: function () { return $window.width() <= 980 ? 290 : 210 }
+        , bottom: 270
+        }
+      })
+    }, 100);
+}(window.jQuery)
+
+</script>
+</body>
+</html>

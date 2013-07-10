@@ -37,6 +37,8 @@ get '/' => sub {
     $self->render('index');
 };
 
+get '/about';
+
 get '/login/oauth_start' => sub {
     my $self = shift;
     return $self->redirect_to( $self->oauth_obj->authorize );

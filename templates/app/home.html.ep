@@ -1,7 +1,13 @@
+<!DOCTYPE html>
 <html>
 <head>
+    <title>Translating Plugins: User Homepage</title>
+    %= include 'app/part_user_head'
 </head>
 <body>
+    %= include 'app/part_user_navbar'
+<div class="container">
+
     <p><strong>Hello <%= $user_data->{name} %></strong></p>
     <p><a href="<%= url_for('/app/home/register_resp_dialog') %>">Register a new Plugin!</a></p>
     <p><a href="<%= url_for('/app/logout') %>">logout</a></p>
@@ -20,5 +26,11 @@
         % }
         </ul>
     </p>
+
+</div> <!-- /container -->
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<script src="<%= url_for('/bootstrap/js/bootstrap.min.js') %>"></script>
+
 </body>
 </html>

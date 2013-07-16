@@ -150,13 +150,10 @@ group {
             dev_branch => $resp_data->{master_branch},
             });
         $prj->insert();
-        if (@$branch_data == 1) {
-            return $self->redirect_to( $self->url_for('/app/home') );
+        if (@$branch_data > 1) {
+            $self->flash(user_msg => { lvl => 'info', text => 'Please choose your active dev branch' });
         }
-        my @b_names = map $_->{name}, @$branch_data;
-        $self->stash('branch_names', \@b_names);
-        $self->stash('prj', $prj);
-        $self->render('app/plugin');
+        return $self->redirect_to( $self->url_for('/app/plugin')->query(name => $resp_name ) );
     };
 
     get '/home/unregister_resp' => sub {

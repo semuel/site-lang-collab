@@ -1,7 +1,17 @@
+<!DOCTYPE html>
 <html>
 <head>
+    <title>Translating Plugins: Your repositories on Github</title>
+    %= include 'app/part_user_head'
 </head>
 <body>
+
+    %= include 'app/part_user_navbar'
+
+<div class="container">
+
+    %= include 'app/part_user_alert'
+
     <p><strong><%= $user_data->{name} %> - Resps</strong></p>
     <ul>
         % foreach my $rec (@$resp_data) {
@@ -11,5 +21,11 @@
             </li>
         % }
     </ul>
+
+</div> <!-- /container -->
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<script src="<%= url_for('/bootstrap/js/bootstrap.min.js') %>"></script>
+
 </body>
 </html>

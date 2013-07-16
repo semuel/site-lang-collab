@@ -118,7 +118,7 @@ group {
         $self->render('app/home');
     };
 
-    get '/home/register_resp_dialog' => sub {
+    get '/github/list' => sub {
         my $self = shift;
         my $user_obj = $self->stash('user_obj');
         my $access_token = $self->get_user_oauth();
@@ -131,7 +131,7 @@ group {
             };
         }
         $self->stash('resp_data', \@resps);
-        $self->render('app/home/register_resp_dialog');
+        $self->render('app/github_list');
     };
 
     get '/home/do_register_resp' => sub {

@@ -128,6 +128,7 @@ group {
             push @resps, { 
                 fullname => $rec->{full_name},
                 description => $rec->{description},
+                short => $rec->{name},
             };
         }
         $self->stash('resp_data', \@resps);

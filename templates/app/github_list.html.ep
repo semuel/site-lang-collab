@@ -12,15 +12,22 @@
 
     %= include 'app/part_user_alert'
 
-    <p><strong><%= $user_data->{name} %> - Resps</strong></p>
-    <ul>
-        % foreach my $rec (@$resp_data) {
-            <li>
-                <%= $rec->{fullname} %> <a href="<%= url_for('/app/home/do_register_resp')->query(name => $rec->{fullname} ) %>">Register</a><br/>
-                <%= $rec->{description} %>
-            </li>
-        % }
-    </ul>
+    <h3>My Github repositories</h3>
+
+    % foreach my $rec (@$resp_data) {
+    <div class="row">
+    	<div class="span7 offset1 well">
+    		<h4>Repository: <a href="https://github.com/<%= $rec->{fullname} %>"><%= $rec->{short} %></a></h4>
+            <p><%= $rec->{description} %></p>
+            <div class="pull-right">
+            	<form method="post" action="<%= url_for('/app/plugin/register') %>">
+            		<input type="hidden" name="name" value="<%= $rec->{fullname} %>" />
+            		<button type="submit" class="btn btn-success">Register</button>
+            	</form>
+            </div>
+    	</div>
+    </div>
+    % }
 
 </div> <!-- /container -->
 

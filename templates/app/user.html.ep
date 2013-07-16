@@ -8,6 +8,8 @@
     %= include 'app/part_user_navbar'
 <div class="container">
 
+    %= include 'app/part_user_alert'
+
     <h2><%= $user_data->{name} %>: User Settings</h2>
 
     <form id="user_form" method="post" action="<%= url_for('/app/user/save') %>">

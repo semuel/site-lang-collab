@@ -72,7 +72,7 @@ get '/login/oauth_login' => sub {
         $is_new_user = 1;
         $user_obj = $user_class->new({ id => $user_id, token => $token });
         $user_obj->oauth_token($access_token);
-        $user_obj->user_data( $update_user->( { msgs => [] } ) );
+        $user_obj->user_data( $update_user->( { } ) );
         $user_obj->insert();
     }
     $self->session({ user_id => $user_id, token => $token });
@@ -233,6 +233,8 @@ group {
             };
         }
         $self->stash('lang_list', \@lang_list);
+        $self->stash('user_msg', $self->flash('user_msg') );
+
         $self->render('app/user');
     };
 
@@ -248,17 +250,17 @@ group {
             $langs->{$ln} = 0 + $self->param($ln);
         }
         $user_data->{languages} = $langs;
+        $user_obj->user_data($user_data);
+        $user_obj->update;
         my $redirect;
         if (grep { $_ > 0 } values %$langs) {
-            push @{$user_data->{msgs}}, { lvl => 'success', text => 'User setting saved' };
+            $self->flash(user_msg => { lvl => 'success', text => 'User setting saved' });
             $redirect = $self->url_for('/app/home');
         }
         else {
-            push @{$user_data->{msgs}}, { lvl => 'error', text => 'Surely you know one language?!' };
+            $self->flash(user_msg => { lvl => 'error', text => 'Surely you know one language?!' });
             $redirect = $self->url_for('/app/user');
         }
-        $user_obj->user_data($user_data);
-        $user_obj->update;
         return $self->redirect_to( $redirect );
     };
 

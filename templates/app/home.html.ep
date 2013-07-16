@@ -8,6 +8,8 @@
     %= include 'app/part_user_navbar'
 <div class="container">
 
+    %= include 'app/part_user_alert'
+
     <p><strong>Hello <%= $user_data->{name} %></strong></p>
     <p><a href="<%= url_for('/app/home/register_resp_dialog') %>">Register a new Plugin!</a></p>
     <p><a href="<%= url_for('/app/logout') %>">logout</a></p>

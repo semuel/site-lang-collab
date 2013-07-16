@@ -51,27 +51,33 @@ get '/login/oauth_login' => sub {
     my $data = $self->oauth_request($access_token, '/user');
     my $user_id = $data->{id};
     my $token = join '', map { $token_chars[int(rand(scalar(@token_chars)))] } 1..20;
-    my $user_data = { };
-    foreach my $key (qw{url name email}) {
-        $user_data->{$key} = $data->{$key};
-    }
+    my $update_user = sub {
+        my $user_data = shift;
+        foreach my $key (qw{url name email}) {
+            $user_data->{$key} = $data->{$key};
+        }
+        return $user_data;
+    };
     my $user_class = $db->resultset('User');
     my $user_obj = $user_class->find($user_id);
+    my $is_new_user;
     if ($user_obj) {
+        $is_new_user = 0;
         $user_obj->oauth_token($access_token);
-        $user_obj->user_data($user_data);
+        $user_obj->user_data( $update_user->( $user_obj->user_data() ) );
         $user_obj->token($token);
         $user_obj->update();
     }
     else {
+        $is_new_user = 1;
         $user_obj = $user_class->new({ id => $user_id, token => $token });
         $user_obj->oauth_token($access_token);
-        $user_obj->user_data($user_data);
+        $user_obj->user_data( $update_user->( { msgs => [] } ) );
         $user_obj->insert();
     }
     $self->session({ user_id => $user_id, token => $token });
     $self->session(expiration => 604800);
-    $self->redirect_to( $self->url_for('/app/home') );
+    $self->redirect_to( $self->url_for( $is_new_user ? '/app/user' : '/app/home' ) );
 };
 
 group { 
@@ -207,6 +213,53 @@ group {
         $prj->update();
 
         $self->redirect_to( $self->url_for('/app/home/configure_resp')->query(name => $prj->resp_name() ) );
+    };
+
+    get '/user' => sub {
+        my $self = shift;
+        my $user_obj = $self->stash('user_obj');
+        my $user_data = $user_obj->user_data();
+        my $langs = $user_data->{languages};
+        if (not defined $langs) {
+            $langs = { qw{ en 0 ja 0 de 0 es 0 fr 0 } };
+        }
+        my $official_name = { qw{ en English ja Japanese de German es Spanish fr Franch } };
+        my @lang_list;
+        foreach my $ln (qw{ en ja de es fr }) {
+            push @lang_list, { 
+                name => $ln, 
+                value => $langs->{$ln}, 
+                fullname => $official_name->{$ln},
+            };
+        }
+        $self->stash('lang_list', \@lang_list);
+        $self->render('app/user');
+    };
+
+    post '/user/save' => sub {
+        my $self = shift;
+        my $user_obj = $self->stash('user_obj');
+        my $user_data = $user_obj->user_data();
+        my $langs = $user_data->{languages};
+        if (not defined $langs) {
+            $langs = { qw{ en 0 ja 0 de 0 es 0 fr 0 } };
+        }
+        foreach my $ln (keys %$langs) {
+            $langs->{$ln} = 0 + $self->param($ln);
+        }
+        $user_data->{languages} = $langs;
+        my $redirect;
+        if (grep { $_ > 0 } values %$langs) {
+            push @{$user_data->{msgs}}, { lvl => 'success', text => 'User setting saved' };
+            $redirect = $self->url_for('/app/home');
+        }
+        else {
+            push @{$user_data->{msgs}}, { lvl => 'error', text => 'Surely you know one language?!' };
+            $redirect = $self->url_for('/app/user');
+        }
+        $user_obj->user_data($user_data);
+        $user_obj->update;
+        return $self->redirect_to( $redirect );
     };
 
 };

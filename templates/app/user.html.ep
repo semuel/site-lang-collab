@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings for user <%= $user_data->{name} %></title>
+    %= include 'app/part_user_head'
+</head>
+<body>
+    %= include 'app/part_user_navbar'
+<div class="container">
+
+    <h2><%= $user_data->{name} %>: User Settings</h2>
+
+    <form id="user_form" method="post" action="<%= url_for('/app/user/save') %>">
+
+% foreach my $lang (@$lang_list) {
+    <div class="row setlang">
+        <div class="span2">
+            <h4><%= $lang->{fullname} %></h4>
+        </div>
+        <div class="span4">
+        <input type="hidden" name="<%= $lang->{name} %>" value="<%= $lang->{value} %>" />
+        <div class="btn-group" data-toggle="buttons-radio">
+            <button type="button" class="btn btn-primary langlvl3 <%= $lang->{value} == 3 ? "active" : "" %>">Good</button>
+            <button type="button" class="btn btn-primary langlvl2 <%= $lang->{value} == 2 ? "active" : "" %>">Medium</button>
+            <button type="button" class="btn btn-primary langlvl1 <%= $lang->{value} == 1 ? "active" : "" %>">Somewhat</button>
+            <button type="button" class="btn btn-primary langlvl0 <%= $lang->{value} == 0 ? "active" : "" %>">don't</button>
+        </div>
+    </div></div>
+% }
+
+    <button type="submit">Save</button>
+
+    </form>
+
+</div> <!-- /container -->
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<script src="<%= url_for('/bootstrap/js/bootstrap.min.js') %>"></script>
+<script type="text/javascript">
+
+$(function(){
+    $('div.setlang').each(function(ix, elem){
+        var $parent = $(elem);
+        $parent.find('button').click(function(){
+            var $b = $(this);
+            var lvl = $b.attr('class').match(/langlvl\d/);
+            lvl = lvl[0].replace("langlvl", "");        
+            $parent.find('input').attr('value', lvl);
+        });
+    });
+});
+
+</script>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-% if ($user_msg) {
+% if (my $user_msg = flash('user_msg')) {
     <div class="alert alert-<%= $user_msg->{lvl} %>">
       <button type="button" class="close" data-dismiss="alert">&times;</button>
       <%= $user_msg->{text} %>

@@ -156,7 +156,7 @@ group {
         my @b_names = map $_->{name}, @$branch_data;
         $self->stash('branch_names', \@b_names);
         $self->stash('prj', $prj);
-        $self->render('app/home/configure_resp');
+        $self->render('app/plugin');
     };
 
     get '/home/unregister_resp' => sub {
@@ -169,7 +169,7 @@ group {
         $self->redirect_to( $self->url_for('/app/home') );
     };
 
-    get '/home/configure_resp' => sub {
+    get '/plugin' => sub {
         my $self = shift;
         my $resp_name = $self->param('name');
         my $user_obj = $self->stash('user_obj');
@@ -180,7 +180,7 @@ group {
         my @b_names = map $_->{name}, @$branch_data;
         $self->stash('branch_names', \@b_names);
         $self->stash('prj', $prj);
-        $self->render('app/home/configure_resp');
+        $self->render('app/plugin');
     };
 
     post '/home/do_resp_configuration' => sub {
@@ -212,7 +212,7 @@ group {
         $prj->fetch_lang_files($access_token);
         $prj->update();
 
-        $self->redirect_to( $self->url_for('/app/home/configure_resp')->query(name => $prj->resp_name() ) );
+        $self->redirect_to( $self->url_for('/app/plugin')->query(name => $prj->resp_name() ) );
     };
 
     get '/user' => sub {
@@ -233,7 +233,6 @@ group {
             };
         }
         $self->stash('lang_list', \@lang_list);
-        $self->stash('user_msg', $self->flash('user_msg') );
 
         $self->render('app/user');
     };

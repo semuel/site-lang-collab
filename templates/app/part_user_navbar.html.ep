@@ -1,7 +1,7 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="brand" href="#">Translating Plugins</a>
+          <a class="brand" href="<%= url_for('/app/home') %>">Translating Plugins</a>
           <ul class="nav">
             <li><a href="<%= url_for('/app/home') %>">Home</a></li>
             <li><a href="<%= url_for('/app/home/register_resp_dialog') %>">Register Plugin</a></li>

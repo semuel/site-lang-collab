@@ -5,7 +5,7 @@ use LWP::UserAgent;
 use JSON qw{decode_json};
 use Carp;
 
-our $VERSION = 0.02;
+our $VERSION = 0.10;
 
 sub new {
     my ($class, %options) = @_;
@@ -190,6 +190,12 @@ versions of the respo. Of course you can fetch the current commit and
 use it instead of master, but then it is less easy
 
 This module let you use Access Token for permission, and scan directories
+
+=HEAD1 MOCKING
+
+Need to write code that read files from Github and local repositories?
+Check out L<WWW::Github::Files::Mock> that uses the same interface
+for local directory.
 
 =head1 CONSTRUCTOR OPTIONS
 

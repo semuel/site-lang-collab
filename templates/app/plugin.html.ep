@@ -10,7 +10,7 @@
 
     %= include 'app/part_user_alert'
 
-<form method="post" action="<%= url_for('/app/home/do_resp_configuration') %>">
+<form method="post" action="<%= url_for('/app/plugin/save') %>">
     <h3>Configuring <%= $prj->short_name() %></h3>
     <h4>Description</h4>
     <p><%= $prj->description() %></p>

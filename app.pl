@@ -194,7 +194,7 @@ group {
         $self->render('app/plugin');
     };
 
-    post '/home/do_resp_configuration' => sub {
+    post '/plugin/save' => sub {
         my $self = shift;
         my $resp_name = $self->param('name');
         my $main_lang = $self->param('main_lang');
@@ -203,28 +203,43 @@ group {
         my $user_obj = $self->stash('user_obj');
         my $prj = $db->resultset('Project')->search(
             { owner => $user_obj->id(), resp_name => $resp_name })->first();
-        die "Not valid resp name"
-            unless $prj;
+        if (not $prj) {
+            $self->flash(user_msg => { lvl => 'error', text => 'Not valid plugin name' });
+            return $self->redirect_to( $self->url_for('/app/home') );
+        }
         my $access_token = $self->get_user_oauth();
         my $branch_data = $self->oauth_request($access_token, "/repos/$resp_name/branches");
 
-        if (defined $dev_branch) {
-            die "Development branch not exists on Github?!"
-                unless 1 == grep { $dev_branch eq $_->{name} } @$branch_data;
+        if (1 == @$branch_data) {
+            $prj->dev_branch($branch_data->[0]->{name});
+        }
+        elsif (defined $dev_branch) {
+            unless (1 == grep { $dev_branch eq $_->{name} } @$branch_data) {
+                my $msg = "Development branch $dev_branch not exists on Github?!";
+                $self->flash(user_msg => { lvl => 'error', text => $msg });
+                return $self->redirect_to( $self->url_for('/app/plugin')->query(name => $prj->resp_name() ) );
+            }
             $prj->dev_branch($dev_branch); 
         }
-        else {
-            $prj->dev_branch(undef);
+        unless (grep { $main_lang eq $_ } qw{ en ja }) {
+            my $msg = "Project language $main_lang not supported";
+            $self->flash(user_msg => { lvl => 'error', text => $msg });
+            return $self->redirect_to( $self->url_for('/app/plugin')->query(name => $prj->resp_name() ) );
         }
-        die "Project language $main_lang not supported"
-            unless grep { $main_lang eq $_ } qw{ en ja };
         $prj->main_lang($main_lang);
         #$prj->fetch_all_documention($access_token);
         my $error;
         $prj->fetch_lang_files($access_token, \$error);
+        if ($error) {
+            my $msg = "Error: $error";
+            $self->flash(user_msg => { lvl => 'error', text => $msg });
+            return $self->redirect_to( $self->url_for('/app/plugin')->query(name => $prj->resp_name() ) );
+        }
         $prj->update();
 
-        $self->redirect_to( $self->url_for('/app/plugin')->query(name => $prj->resp_name() ) );
+        my $msg = "Plugin " . $prj->short_name() . " saved";
+        $self->flash(user_msg => { lvl => 'success', text => $msg });
+        return $self->redirect_to( $self->url_for('/app/home') );
     };
 
     get '/user' => sub {

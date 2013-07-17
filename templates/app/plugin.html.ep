@@ -34,7 +34,7 @@
         % }
     </p>
     <input type="hidden" name="name" value="<%= $prj->resp_name() %>" />
-    <button type="submit">Save</button>
+    <button type="submit" class="btn">Save</button>
     <a href="<%= url_for('/app/home') %>">Back to home</a>
 </form>
 

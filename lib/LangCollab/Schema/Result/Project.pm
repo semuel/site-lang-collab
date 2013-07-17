@@ -143,27 +143,35 @@ sub fetch_all_documention {
 }
 
 sub fetch_lang_files {
-    my ($self, $token, $commit) = @_;
+    my ($self, $token, $error) = @_;
     my ($author, $resp) = split '/', $self->resp_name(), 2;
     my $master = WWW::Github::Files->new(   
         author => $author,
         resp => $resp,
-        $commit ? (commit => $commit) : (branch => $self->dev_branch() || $self->master_branch()),
+        branch => $self->dev_branch() || $self->master_branch(),
     );
     my @plugins = $master->open('/plugins')->readdir();
     if (@plugins != 1) {
-        croak('Can only handle one plugin per git');
+        $$error = 'Can only handle one plugin per git';
+        return;
     }
     my $plugin_dir = $plugins[0];
     my $config = $master->open($plugin_dir->path().'/config.yaml')->read();
     my ($l10n_class) = $config =~ m/^l10n_class:\s*(.*)$/m;
     if (not $l10n_class) {
-        croak('This plugin does not have a l10n_class defined');
+        $$error = 'This plugin does not have a l10n_class defined';
+        return;
     }
     $l10n_class =~ s/::/\//g;
     my $lang_path = $plugin_dir->path().'/lib/'.$l10n_class;
     my @lang_files = $master->open($lang_path)->readdir();
     print STDERR "Files: |", join('|', map { $_->name() } @lang_files), "|\n";
+}
+
+sub short_name {
+    my $self = shift;
+    my ($user, $sname) = split '/', $self->resp_name(), 2;
+    return $sname;
 }
 
 1;

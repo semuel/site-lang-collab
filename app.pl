@@ -122,9 +122,12 @@ group {
         my $self = shift;
         my $user_obj = $self->stash('user_obj');
         my $access_token = $self->get_user_oauth();
+        my @prjs = $db->resultset('Project')->search({ owner => $user_obj->id() })->all();
+        my %existing = map { ( $_->resp_name() => 1 ) } @prjs;
         my $data = $self->oauth_request($access_token, '/user/repos?type=owner');
         my @resps;
         foreach my $rec (@$data) {
+            next if exists $existing{ $rec->{full_name} };
             push @resps, { 
                 fullname => $rec->{full_name},
                 description => $rec->{description},
@@ -135,7 +138,7 @@ group {
         $self->render('app/github_list');
     };
 
-    get '/home/do_register_resp' => sub {
+    post '/plugin/register' => sub {
         my $self = shift;
         # name is in the format of owner/resp_name
         my $resp_name = $self->param('name');
@@ -151,6 +154,14 @@ group {
             dev_branch => $resp_data->{master_branch},
             });
         $prj->insert();
+        my $error;
+        $prj->fetch_lang_files($access_token, \$error);
+        if ($error) {
+            my $msg = 'Error while registering plugin ' . $prj->short_name() . ': ' . $error;
+            $self->flash(user_msg => { lvl => 'error', text => $msg  });
+            $prj->delete();
+            return $self->redirect_to( $self->url_for('/app/github/list') );
+        }
         if (@$branch_data > 1) {
             $self->flash(user_msg => { lvl => 'info', text => 'Please choose your active dev branch' });
         }
@@ -207,7 +218,8 @@ group {
             unless grep { $main_lang eq $_ } qw{ en ja };
         $prj->main_lang($main_lang);
         #$prj->fetch_all_documention($access_token);
-        $prj->fetch_lang_files($access_token);
+        my $error;
+        $prj->fetch_lang_files($access_token, \$error);
         $prj->update();
 
         $self->redirect_to( $self->url_for('/app/plugin')->query(name => $prj->resp_name() ) );

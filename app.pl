@@ -168,13 +168,15 @@ group {
         return $self->redirect_to( $self->url_for('/app/plugin')->query(name => $resp_name ) );
     };
 
-    get '/home/unregister_resp' => sub {
+    post '/plugin/delete' => sub {
         my $self = shift;
         my $resp_name = $self->param('name');
         my $user_obj = $self->stash('user_obj');
         my $prj = $db->resultset('Project')->search(
             { owner => $user_obj->id(), resp_name => $resp_name })->first();
         $prj->delete();
+        my $msg = 'Plugin ' . $prj->short_name() . ' was deleted';
+        $self->flash(user_msg => { lvl => 'info', text => $msg });
         $self->redirect_to( $self->url_for('/app/home') );
     };
 

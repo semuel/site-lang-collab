@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Settings for user <%= $user_data->{name} %></title>
+    <title>Configuring <%= $prj->short_name() %></title>
     %= include 'app/part_user_head'
 </head>
 <body>
@@ -11,19 +11,23 @@
     %= include 'app/part_user_alert'
 
 <form method="post" action="<%= url_for('/app/home/do_resp_configuration') %>">
-    <p><strong>Configuring</strong> <%= $prj->resp_name() %></p>
-    <p><strong>Description:</strong> <%= $prj->description() %></p>
-    <p>
-        <strong>Plugin Main language</strong>
+    <h3>Configuring <%= $prj->short_name() %></h3>
+    <h4>Description</h4>
+    <p><%= $prj->description() %></p>
+
+    <h4>Plugin Main language</h4>
+    <div>
         <select name="main_lang">
             <option value="en" <%= $prj->main_lang() eq 'en' ? 'selected="selected"' : '' %>>English</option>
             <option value="ja" <%= $prj->main_lang() eq 'ja' ? 'selected="selected"' : '' %>>Japanese</option>
         </select>
-    </p>
-    <p>
-        <strong>Plugin development Branch</strong>
+    </div>
+
+
+    <h4>Plugin development Branch</h4>
+    <div>
         % if (@$branch_names == 1) {
-            Only one branch exists in resp
+            <p><%= $prj->dev_branch() %> (Only one branch exists)</p>
         % }
         % else {
             <select name="dev_branch">
@@ -32,11 +36,16 @@
             % }
             </select>
         % }
-    </p>
+    </div>
     <input type="hidden" name="name" value="<%= $prj->resp_name() %>" />
-    <button type="submit" class="btn">Save</button>
-    <a href="<%= url_for('/app/home') %>">Back to home</a>
+    <button type="submit" class="btn btn-primary">Save</button>
 </form>
+
+<form method="post" action="<%= url_for('/app/plugin/delete') %>">
+    <input type="hidden" name="name" value="<%= $prj->resp_name() %>" />
+    <button type="submit" class="btn btn-danger">Remove Plugin</button>
+</form>
+<a href="<%= url_for('/app/home') %>">Back to home</a>
 
 </div> <!-- /container -->
 

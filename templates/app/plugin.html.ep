@@ -10,33 +10,46 @@
 
     %= include 'app/part_user_alert'
 
-<form method="post" action="<%= url_for('/app/plugin/save') %>">
     <h3>Configuring <%= $prj->short_name() %></h3>
-    <h4>Description</h4>
-    <p><%= $prj->description() %></p>
 
-    <h4>Plugin Main language</h4>
-    <div>
-        <select name="main_lang">
-            <option value="en" <%= $prj->main_lang() eq 'en' ? 'selected="selected"' : '' %>>English</option>
-            <option value="ja" <%= $prj->main_lang() eq 'ja' ? 'selected="selected"' : '' %>>Japanese</option>
-        </select>
-    </div>
+<form method="post" class="form-horizontal" action="<%= url_for('/app/plugin/save') %>">
 
+<div class="row"><div class="span7 offset1">
+    <table class="table">
+        <tr>
+            <td class="text-right">Description</td>
+            <td><%= $prj->description() %></td>
+        </tr>
 
-    <h4>Plugin development Branch</h4>
-    <div>
-        % if (@$branch_names == 1) {
-            <p><%= $prj->dev_branch() %> (Only one branch exists)</p>
-        % }
-        % else {
-            <select name="dev_branch">
-            % foreach my $branch (@$branch_names) {
-                <option value="$branch" <%= $prj->dev_branch() eq $branch ? 'selected="selected"' : '' %>>$branch</option>
-            % }
-            </select>
-        % }
-    </div>
+        <tr>
+            <td class="text-right">Plugin Main language</td>
+            <td>
+                <select name="main_lang" class="input-medium">
+                    <option value="en" <%= $prj->main_lang() eq 'en' ? 'selected="selected"' : '' %>>English</option>
+                    <option value="ja" <%= $prj->main_lang() eq 'ja' ? 'selected="selected"' : '' %>>Japanese</option>
+                </select>
+            </td>
+        </tr>
+
+        <tr>
+            <td class="text-right">Plugin development Branch</td>
+            <td>
+                % if (@$branch_names == 1) {
+                    <%= $prj->dev_branch() %> (Only one branch exists)
+                % }
+                % else {
+                    <select name="dev_branch">
+                    % foreach my $branch (@$branch_names) {
+                        <option value="$branch" <%= $prj->dev_branch() eq $branch ? 'selected="selected"' : '' %>>$branch</option>
+                    % }
+                    </select>
+                % }
+            </td>
+        </tr>
+
+    </table>
+</div></div>
+
     <input type="hidden" name="name" value="<%= $prj->resp_name() %>" />
     <button type="submit" class="btn btn-primary">Save</button>
 </form>

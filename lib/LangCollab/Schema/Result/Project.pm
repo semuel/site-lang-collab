@@ -165,6 +165,47 @@ sub fetch_lang_files {
     $l10n_class =~ s/::/\//g;
     my $lang_path = $plugin_dir->path().'/lib/'.$l10n_class;
     my @lang_files = $master->open($lang_path)->readdir();
+
+    require LangCollab::ParseLangFile;
+    my $cleaner = \&LangCollab::ParseLangFile::get_str_inter;
+    my $tr_class = $::db->resultset('Translation');
+
+    foreach my $file_obj (@lang_files) {
+        my $lang_name = lc( substr( $_->name(), 0, 2 ) );
+        my $content = Encode::decode( "UTF8", $file_obj->read());
+        my $tokens = LangCollab::ParseLangFile->parse($content);
+        # each token is ['type', value, begin_sep, end_sep]
+        my @strs = grep { $_->[0] eq 'STR' } @$tokens;
+        next unless scalar( @strs ) % 2 == 0;
+        my %hash;
+        while (my $key_rec = shift @strs) {
+            my $value_rec = shift @strs;
+            my $key = $cleaner->($key_rec);
+            $hash{$key} = [$key_rec, $value_rec];
+        }
+        my $iter = $tr_class->search({
+            prj_id => $self->id(),
+            user_id => $self->owner(),
+            status => 1, 
+            lang => $lang_name,
+        });
+        while (my $tr = $iter->next()) {
+            if (exists $hash{$tr->source()}) {
+                $tr->
+            }
+        }
+            # my $tr = $tr_class->new(
+            #     prj_id => $self->id(),
+            #     user_id => $self->owner(),
+            #     status => 1, 
+            #     lang => $lang_name,
+            #     source => $cleaner->($key_rec),
+            #     trans => $cleaner->($value_rec),
+            #     source_quotes => $key_rec->[2],
+            #     dest_quotes => $value_rec->[2],
+            # );
+            # $tr->insert();
+    }
     print STDERR "Files: |", join('|', map { $_->name() } @lang_files), "|\n";
 }
 

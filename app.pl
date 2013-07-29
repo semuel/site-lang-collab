@@ -16,7 +16,7 @@ app->secret( $config->{cookie_secret} );
 my @token_chars = ('a'..'z', 'A'..'Z', '0'..'9');
 my $github_api = 'https://api.github.com';
 
-my $db = LangCollab::Schema->connect(
+our $db = LangCollab::Schema->connect(
     'dbi:mysql:dbname=' . $config->{database_table}, 
     $config->{database_user}, 
     $config->{database_password}

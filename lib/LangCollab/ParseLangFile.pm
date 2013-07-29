@@ -163,6 +163,7 @@ sub get_str_val {
     return $str;
 }
 
+# return the string as Perl would have printed it
 sub get_str_inter {
     my $token = shift;
     return $token->[1] unless $token->[0] eq 'STR';

@@ -16,6 +16,11 @@ and later submit a pull-request. (should we offer to do it using the site interf
 A project is url+branch. we should let the author also to refresh the site data from
 the resp. (should we do it automatically?)
 
+Local Login
+-----------
+
+http://localhost/~sfomberg/cgi-bin/lang_colleb/app.pl/app/home
+
 Status
 ------
 

@@ -115,4 +115,21 @@ __PACKAGE__->set_primary_key("trans_id");
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+# Status codes:
+# the original translation that comes from the project
+use constant STATUS_ORIG => 1; 
+# accepted translation from user
+use constant STATUS_ACCEPTED => 2; 
+# submition from user, waiting to be reviewed
+use constant STATUS_WAITING => 1; 
+# suspected SPAM
+use constant STATUS_MAYBESPAM => 1; 
+# marked spam
+use constant STATUS_SPAM => 1; 
+# rejected translation
+use constant STATUS_REJECTED => 1; 
+
+
+
 1;

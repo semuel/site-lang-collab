@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Translationg Collaboration for Movable Type Plugins</title>
-    %= include 'part_public_head'
+    %= include 'public/part_public_head'
     <style type="text/css">
       body {
         padding-top: 20px;
@@ -47,7 +47,7 @@
 
     <div class="container-narrow">
       
-%= include 'part_public_heading'
+%= include 'public/part_public_heading'
       <hr>
 
       <div class="jumbotron">

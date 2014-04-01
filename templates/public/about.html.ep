@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Translationg Collaboration for Movable Type Plugins</title>
-    %= include 'part_public_head'
+    %= include 'public/part_public_head'
     <link href="<%= url_for('/bootstrap/css/docs.css') %>" rel="stylesheet">
     <style type="text/css">
       /* Custom container */
@@ -20,7 +20,7 @@
 
  <div class="container">
 
-%= include 'part_public_heading'
+%= include 'public/part_public_heading'
       <hr>
 
     <!-- Docs nav

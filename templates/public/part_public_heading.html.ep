@@ -1,8 +1,8 @@
 
       <div class="masthead">
         <ul class="nav nav-pills pull-right">
-          <li class="active"><a href="#">Home</a></li>
-          <li><a href="<%= url_for('/login/oauth_start') %>">Sign up / Login</a></li>
+          <li class="active"><a href="<%= url_for('frontpage') %>">Home</a></li>
+          <li><a href="<%= url_for('/auth/authenticate') %>">Sign up / Login</a></li>
           <li><a href="<%= url_for('/about') %>">About</a></li>
         </ul>
         <h3 class="muted">Plugin Language Collaboration</h3>

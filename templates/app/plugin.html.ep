@@ -40,7 +40,7 @@
                 % else {
                     <select name="dev_branch">
                     % foreach my $branch (@$branch_names) {
-                        <option value="$branch" <%= $prj->dev_branch() eq $branch ? 'selected="selected"' : '' %>>$branch</option>
+                        <option value="<%= $branch %>" <%= $prj->dev_branch() eq $branch ? 'selected="selected"' : '' %>><%= $branch %></option>
                     % }
                     </select>
                 % }

@@ -149,6 +149,7 @@ sub fetch_lang_files {
         author => $author,
         resp => $resp,
         branch => $self->dev_branch() || $self->master_branch(),
+        token => $token,
     );
     my @plugins = $master->open('/plugins')->readdir();
     if (@plugins != 1) {
@@ -168,10 +169,10 @@ sub fetch_lang_files {
 
     require LangCollab::ParseLangFile;
     my $cleaner = \&LangCollab::ParseLangFile::get_str_inter;
-    my $tr_class = $::db->resultset('Translation');
+    my $tr_class = $self->result_source->schema->resultset('Translation');
 
     foreach my $file_obj (@lang_files) {
-        my $lang_name = lc( substr( $_->name(), 0, 2 ) );
+        my $lang_name = lc( substr( $file_obj->name(), 0, 2 ) );
         my $content = Encode::decode( "UTF8", $file_obj->read());
         my $tokens = LangCollab::ParseLangFile->parse($content);
         # each token is ['type', value, begin_sep, end_sep]
@@ -181,7 +182,8 @@ sub fetch_lang_files {
         while (my $key_rec = shift @strs) {
             my $value_rec = shift @strs;
             my $key = $cleaner->($key_rec);
-            $hash{$key} = [$key_rec, $value_rec];
+            # TODO: add warnings for duplictes
+            $hash{$key} = [$key_rec, $value_rec, $key];
         }
         my $iter = $tr_class->search({
             prj_id => $self->id(),
@@ -190,23 +192,35 @@ sub fetch_lang_files {
             lang => $lang_name,
         });
         while (my $tr = $iter->next()) {
-            if (exists $hash{$tr->source()}) {
-                $tr->
+            my $key = $tr->source();
+            if (exists $hash{$key}) {
+                my $rec = delete $hash{$key};
+                my $val = $cleaner->($rec->[1]);
+                next if $tr->trans() eq $val;
+                $tr->trans($val);
+                $tr->update();
+            }
+            else {
+                $tr->remove();
             }
         }
-            # my $tr = $tr_class->new(
-            #     prj_id => $self->id(),
-            #     user_id => $self->owner(),
-            #     status => 1, 
-            #     lang => $lang_name,
-            #     source => $cleaner->($key_rec),
-            #     trans => $cleaner->($value_rec),
-            #     source_quotes => $key_rec->[2],
-            #     dest_quotes => $value_rec->[2],
-            # );
-            # $tr->insert();
+        foreach my $key (keys %hash) {
+            # these are new translations in the file
+            my $rec = $hash{$key};
+            my $tr = $tr_class->new({
+                prj_id => $self->id(),
+                user_id => $self->owner(),
+                status => 1, 
+                lang => $lang_name,
+                source => $key,
+                trans => $cleaner->($rec->[1]),
+                source_quotes => $rec->[0]->[2],
+                dest_quotes => $rec->[1]->[2],
+                });
+            $tr->insert();
+        }
     }
-    print STDERR "Files: |", join('|', map { $_->name() } @lang_files), "|\n";
+    return;
 }
 
 sub short_name {

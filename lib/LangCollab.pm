@@ -25,13 +25,14 @@ sub startup {
         );
 
     my $r = $self->routes;
+
+    $r->get('/auth/authenticate')->to('auth#authenticate');
+    $r->get('/auth/callback')->to('auth#callback');
+
     my $public = $r->bridge('/')->to('auth#maybe_user');
     $public->get('/')->to('public#index')->name('frontpage');
     $public->get('/logout')->to('public#logout');
     $public->get('/about')->to('public#about');
-
-    $r->get('/auth/authenticate')->to('auth#authenticate');
-    $r->get('/auth/callback')->to('auth#callback');
 
     my $app = $public->bridge('/app')->to('auth#must_user');
     $app->get('/home')->to('app#home')->name('apphome');
@@ -39,9 +40,13 @@ sub startup {
     $app->post('/user/save')->to('app#user_save');
     $app->get('/github/list')->to('app#github_repos_list');
     $app->post('/plugin/register')->to('app#plugin_register');
-    $app->get('/plugin')->to('app#config_plugin');
-    $app->post('/plugin/save')->to('app#plugin_save');
-    $app->post('/plugin/delete')->to('app#plugin_delete');
+    $app->get('/trans/plugin_list')->to('translations#plugin_list');
+
+    my $plugin = $app->bridge('/plugin/:repos_user/:repos_name')->to('plugin#bridge_load');
+    my $plugin_owner = $plugin->bridge('/')->to('plugin#owner_only');
+    $plugin_owner->post('/save')->to('plugin#save');
+    $plugin_owner->post('/delete')->to('plugin#delete');
+    $plugin_owner->get('/edit')->to('plugin#edit');
 
     $self->helper( oauth_request => \&oauth_request_helper );
     $self->helper( db => sub { return $db } );

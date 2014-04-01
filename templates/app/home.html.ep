@@ -24,7 +24,7 @@
                 <div class="span4 well well-large">
         <h5><%= $prj->short_name() %></h5>
         <p><%= $prj->description() %><p/>
-        <a class="btn" href="<%= url_for('/app/plugin')->query(name => $prj->resp_name() ) %>">Configure</a>
+        <a class="btn" href="<%= url_for('/app/plugin/'.$prj->resp_name().'/edit') %>">Configure</a>
                 </div>                
             </div>
 % }

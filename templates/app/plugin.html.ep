@@ -12,7 +12,7 @@
 
     <h3>Configuring <%= $prj->short_name() %></h3>
 
-<form method="post" class="form-horizontal" action="<%= url_for('/app/plugin/save') %>">
+<form method="post" class="form-horizontal" action="<%= url_for('/app/plugin/'.$prj->resp_name().'/save') %>">
 
 <div class="row"><div class="span7 offset1">
     <table class="table">
@@ -50,12 +50,10 @@
     </table>
 </div></div>
 
-    <input type="hidden" name="name" value="<%= $prj->resp_name() %>" />
     <button type="submit" class="btn btn-primary">Save</button>
 </form>
 
-<form method="post" action="<%= url_for('/app/plugin/delete') %>">
-    <input type="hidden" name="name" value="<%= $prj->resp_name() %>" />
+<form method="post" action="<%= url_for('/app/plugin/'.$prj->resp_name().'/delete') %>">
     <button type="submit" class="btn btn-danger">Remove Plugin</button>
 </form>
 <a href="<%= url_for('/app/home') %>">Back to home</a>

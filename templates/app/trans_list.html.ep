@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Configuring <%= $prj->short_name() %></title>
+    %= include 'app/part_user_head'
+</head>
+<body>
+    %= include 'app/part_user_navbar'
+<div class="container">
+
+    %= include 'app/part_user_alert'
+
+
+    
+</div> <!-- /container -->
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<script src="<%= url_for('/bootstrap/js/bootstrap.min.js') %>"></script>
+
+</body>
+</html>

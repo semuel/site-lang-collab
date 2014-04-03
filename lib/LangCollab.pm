@@ -47,14 +47,10 @@ sub startup {
     $plugin_owner->post('/save')->to('plugin#save');
     $plugin_owner->post('/delete')->to('plugin#delete');
     $plugin_owner->get('/edit')->to('plugin#edit');
+    $plugin->get('/trans_list')->to('translations#trans_list');
 
     $self->helper( oauth_request => \&oauth_request_helper );
     $self->helper( db => sub { return $db } );
-
-    # $r->any('/')->to('login#index')->name('index');
-    # my $logged_in = $r->under->to('login#logged_in');
-    # $logged_in->get('/protected')->to('login#protected');
-    # $r->get('/logout')->to('login#logout');
 }
 
 sub oauth_request_helper {

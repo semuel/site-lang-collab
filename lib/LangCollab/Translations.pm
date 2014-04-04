@@ -36,6 +36,7 @@ sub trans_list {
     my $trans_hash = {};
     my $waiting_langs = {};
     my $have_langs = {};
+    my $waiting_array = [];
 
     foreach my $t (@trans) {
         my $src = $t->source();
@@ -51,14 +52,17 @@ sub trans_list {
             push @$trans_array, $rec;
         }
         if ($t->status() == STATUS_WAITING) {
-            $rec->{has_waiting} = 1;
+            if ($rec->{has_waiting} == 0) {
+                push @$waiting_array, $rec;
+                $rec->{has_waiting} = 1;
+            }
             $waiting_langs->{ $t->lang() } = 1;
         }
-        $waiting_langs->{ $t->lang() } = 1;
     }
     $self->stash('trans_array', $trans_array);
     $self->stash('trans_hash', $trans_hash);
     $self->stash('waiting_langs', $waiting_langs);
+    $self->stash('waiting_array', $waiting_array);
     $self->stash('have_langs', $have_langs);
     return $self->render('app/trans_list');
 }

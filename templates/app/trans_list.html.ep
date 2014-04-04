@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Configuring <%= $prj->short_name() %></title>
+    <title>Translations for <%= $prj_obj->short_name() %></title>
     %= include 'app/part_user_head'
 </head>
 <body>
@@ -10,12 +10,32 @@
 
     %= include 'app/part_user_alert'
 
+    <h3>Translations for <%= $prj_obj->short_name() %></h3>
 
-    
+    <div class="row">
+        <div class="span7 well well-large">
+            <h4>Waiting</h4>
+    % foreach my $rec (@$waiting_array) {
+                <div class="row">
+                    <div class="span6 well">
+                        <p>Source: <span class="text"><%= $rec->{source_text} %></span></p>
+    %   foreach my $trans (@{$rec->{translations}}) {
+    %       next unless $trans->status == 3; # STATUS_WAITING
+                        <p>to: <%= lang_name($trans->lang) %> <span class="text"><%= $trans->trans() %></span></p>
+    %   }
+                    </div>
+                </div>
+    % }
+    % if (!@$waiting_array) {
+            <p>No new translation waiting for your approval</p>
+    % }
+        </div>
+    </div>
+
+
 </div> <!-- /container -->
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-<script src="<%= url_for('/bootstrap/js/bootstrap.min.js') %>"></script>
+    %= include 'app/part_user_footer'
 
 </body>
 </html>

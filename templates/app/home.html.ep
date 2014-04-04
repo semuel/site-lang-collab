@@ -25,6 +25,7 @@
         <h5><%= $prj->short_name() %></h5>
         <p><%= $prj->description() %><p/>
         <a class="btn" href="<%= url_for('/app/plugin/'.$prj->resp_name().'/edit') %>">Configure</a>
+        <a class="btn" href="<%= url_for('/app/plugin/'.$prj->resp_name().'/trans_list') %>">Translation List</a>
                 </div>                
             </div>
 % }
@@ -43,8 +44,7 @@
 
 </div> <!-- /container -->
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-<script src="<%= url_for('/bootstrap/js/bootstrap.min.js') %>"></script>
+    %= include 'app/part_user_footer'
 
 </body>
 </html>

@@ -51,6 +51,18 @@ sub startup {
 
     $self->helper( oauth_request => \&oauth_request_helper );
     $self->helper( db => sub { return $db } );
+    $self->helper( lang_name => \&get_lang_name );
+}
+
+my %langs = (
+    en => 'English',
+    ja => 'Japanese',
+);
+
+sub get_lang_name {
+    my $self = shift;
+    my ($lang) = @_;
+    return exists $langs($lang) ? $langs($lang) : $lang;
 }
 
 sub oauth_request_helper {

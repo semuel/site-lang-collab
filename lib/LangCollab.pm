@@ -62,7 +62,7 @@ my %langs = (
 sub get_lang_name {
     my $self = shift;
     my ($lang) = @_;
-    return exists $langs($lang) ? $langs($lang) : $lang;
+    return exists $langs{$lang} ? $langs{$lang} : $lang;
 }
 
 sub oauth_request_helper {

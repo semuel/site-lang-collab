@@ -21,7 +21,8 @@ sub startup {
     $db = LangCollab::Schema->connect(
         'dbi:mysql:dbname=' . $config->{database_table}, 
         $config->{database_user}, 
-        $config->{database_password}
+        $config->{database_password},
+        { mysql_enable_utf8 => 1},
         );
 
     my $r = $self->routes;

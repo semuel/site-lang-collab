@@ -21,7 +21,7 @@
                         <p>Source: <span class="text"><%= $rec->{source_text} %></span></p>
     %   foreach my $trans (@{$rec->{translations}}) {
     %       next unless $trans->status == 3; # STATUS_WAITING
-                        <p>to: <%= lang_name($trans->lang) %> <span class="text"><%= $trans->trans() %></span></p>
+                        <p>to <%= lang_name($trans->lang) %>: <span class="text"><%= $trans->trans() %></span></p>
     %   }
                     </div>
                 </div>
@@ -30,6 +30,22 @@
             <p>No new translation waiting for your approval</p>
     % }
         </div>
+    </div>
+
+    <div class="row">
+    % foreach my $lang (@$have_langs) {
+        <div class="span7 well well-large">
+            <h4>Translations for <%= lang_name($lang) %></h4>
+    %   foreach my $trans (@{ $langs_source->{$lang} }) {
+                <div class="row">
+                    <div class="span6 well">
+                        <p>Source: <span class="text"><%= $trans->source() %></span></p>
+                        <p>to <%= lang_name($lang) %>: <span class="text"><%= $trans->trans() %></span></p>
+                    </div>
+                </div>
+    %   }
+        </div>
+    % }
     </div>
 
 
